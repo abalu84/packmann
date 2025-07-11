@@ -13,12 +13,14 @@ npm run dev
 - Leertaste: Pause
 - R: Neustart
 - M: Musik an/aus
+- Shift+D: Debug-Modus
 
 ## Features
 
 - Lokaler Highscore via localStorage
 - Touch-Steuerung für mobile Geräte
 - Einfacher Sound mit Howler.js
+- Debug-Overlay
 
 ## Lizenz
 

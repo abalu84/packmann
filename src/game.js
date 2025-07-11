@@ -1,5 +1,5 @@
 import { Howl } from 'howler';
-import { movePacman } from "./pacman.js";
+import { movePacman, canMoveTo } from "./pacman.js";
 
 const FPS = 60;
 const TILE_SIZE = 20;
@@ -24,29 +24,43 @@ let highscore = parseInt(localStorage.getItem('highscore') || '0', 10);
 const scoreEl = document.getElementById('score');
 const levelEl = document.getElementById('level');
 const livesEl = document.getElementById('lives');
+const highscoreEl = document.getElementById('highscore');
+const debugEl = document.getElementById('debug');
 const gameContainer = document.getElementById('game-container');
 const muteBtn = document.getElementById('mute');
 
 let muted = false;
 let sound = new Howl({ src: ['assets/audio/chomp.mp3'], volume: 0.5 });
+let debug = false;
 
 function init() {
+  scoreEl.textContent = score;
+  levelEl.textContent = level;
+  livesEl.textContent = lives;
+  highscoreEl.textContent = highscore;
   buildLevel();
   state = STATES.PLAYING;
   window.requestAnimationFrame(gameLoop);
 }
 
-function buildLevel() {
+async function buildLevel() {
   gameContainer.innerHTML = '';
-  for (let y = 0; y < FIELD_HEIGHT; y++) {
-    for (let x = 0; x < FIELD_WIDTH; x++) {
+  const res = await fetch(`assets/levels/level${level}.json`);
+  const data = await res.json();
+  data.layout.forEach((row, y) => {
+    row.split('').forEach((cell, x) => {
       const tile = document.createElement('div');
-      tile.className = 'tile pellet';
+      tile.className = 'tile';
+      if (cell === 'W') {
+        tile.classList.add('wall');
+      } else if (cell === '.') {
+        tile.classList.add('pellet');
+      }
       tile.style.left = `${x * TILE_SIZE}px`;
       tile.style.top = `${y * TILE_SIZE}px`;
       gameContainer.appendChild(tile);
-    }
-  }
+    });
+  });
 }
 
 let lastTime = 0;
@@ -63,10 +77,16 @@ function gameLoop(time) {
 }
 
 let pacman = { x: 14, y: 23, dir: { x: 0, y: 0 } };
+let ghosts = [
+  { x: 13, y: 14, dir: { x: 0, y: 1 } },
+  { x: 14, y: 14, dir: { x: 0, y: -1 } }
+];
 
 function update() {
-  movePacman(pacman, FIELD_WIDTH, FIELD_HEIGHT);
+  movePacman(pacman, FIELD_WIDTH, FIELD_HEIGHT, canMoveTo);
   eatPellet(pacman.x, pacman.y);
+  moveGhosts();
+  checkCollisions();
 }
 
 function eatPellet(x, y) {
@@ -77,6 +97,61 @@ function eatPellet(x, y) {
     score += 10;
     scoreEl.textContent = score;
     if (!muted) sound.play();
+    updateHighscore();
+  }
+}
+
+function moveGhosts() {
+  ghosts.forEach(g => {
+    if (Math.random() < 0.3) {
+      g.dir = randomDir();
+    }
+    const nx = g.x + g.dir.x;
+    const ny = g.y + g.dir.y;
+    if (canMoveTo(nx, ny)) {
+      g.x = nx;
+      g.y = ny;
+    } else {
+      g.dir = randomDir();
+    }
+  });
+}
+
+function randomDir() {
+  const dirs = [
+    { x: 1, y: 0 },
+    { x: -1, y: 0 },
+    { x: 0, y: 1 },
+    { x: 0, y: -1 }
+  ];
+  return dirs[Math.floor(Math.random() * dirs.length)];
+}
+
+function checkCollisions() {
+  ghosts.forEach(g => {
+    if (g.x === pacman.x && g.y === pacman.y) {
+      loseLife();
+    }
+  });
+}
+
+function loseLife() {
+  lives -= 1;
+  livesEl.textContent = lives;
+  if (lives <= 0) {
+    state = STATES.GAME_OVER;
+    updateHighscore();
+    return;
+  }
+  pacman.x = 14; pacman.y = 23; pacman.dir = { x: 0, y: 0 };
+  ghosts.forEach(g => g.x = 13);
+}
+
+function updateHighscore() {
+  if (score > highscore) {
+    highscore = score;
+    localStorage.setItem('highscore', highscore.toString());
+    highscoreEl.textContent = highscore;
   }
 }
 
@@ -90,6 +165,22 @@ function draw() {
     gameContainer.appendChild(el);
   }
   el.style.transform = `translate(${pacman.x * TILE_SIZE}px, ${pacman.y * TILE_SIZE}px)`;
+
+  ghosts.forEach((g, i) => {
+    const id = `ghost-${i}`;
+    let gel = document.getElementById(id);
+    if (!gel) {
+      gel = document.createElement('div');
+      gel.id = id;
+      gel.className = 'tile ghost';
+      gameContainer.appendChild(gel);
+    }
+    gel.style.transform = `translate(${g.x * TILE_SIZE}px, ${g.y * TILE_SIZE}px)`;
+  });
+
+  if (debug) {
+    debugEl.textContent = `FPS: ${Math.round(1000 / (performance.now() - lastTime))}\nX:${pacman.x} Y:${pacman.y}`;
+  }
 }
 
 function handleKey(e) {
@@ -102,6 +193,7 @@ function handleKey(e) {
     case 'Enter': if (state === STATES.GAME_OVER) restart(); break;
     case 'R': case 'r': restart(); break;
     case 'M': case 'm': toggleMute(); break;
+    case 'D': if (e.shiftKey) toggleDebug(); break;
   }
 }
 
@@ -124,6 +216,11 @@ function restart() {
 function toggleMute() {
   muted = !muted;
   muteBtn.textContent = muted ? 'Unmute' : 'Mute';
+}
+
+function toggleDebug() {
+  debug = !debug;
+  debugEl.style.display = debug ? 'block' : 'none';
 }
 
 muteBtn.addEventListener('click', toggleMute);

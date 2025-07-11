@@ -7,3 +7,4 @@ Folgende Schritte prüfen die Spielmechanik, Touch-Steuerung und Barrierefreihei
 3. **Touchsteuerung**: Auf mobilen Geräten Buttons berühren, um Pacman zu steuern.
 4. **Barrierefreiheit**: Fokus-Indikatoren sichtbar, Kontrast prüfen, Screenreader liest Status vor.
 5. **Highscore**: Nach Spielende wird der Highscore lokal gespeichert und erneut angezeigt.
+6. **Debug**: Mit Shift+D lässt sich ein Debug-Overlay ein- und ausschalten.
