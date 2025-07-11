@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Packmann</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="game-container" tabindex="0"></div>
+<div id="ui">
+  <span id="score">0</span> | <span id="level">1</span> | <span id="lives">3</span> <button id="mute" aria-label="Toggle sound">M</button>
+</div>
+<div id="touch-controls" aria-hidden="true">
+  <button id="up" aria-label="Up">▲</button>
+  <button id="left" aria-label="Left">◀</button>
+  <button id="down" aria-label="Down">▼</button>
+  <button id="right" aria-label="Right">▶</button>
+</div>
+<script type="module" src="./src/game.js"></script>
+</body>
+</html>
