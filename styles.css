@@ -1,0 +1,14 @@
+body { margin: 0; background: black; color: #fff; font-family: Arial, sans-serif; }
+#game-container { width: 560px; height: 620px; margin: auto; position: relative; outline: none; }
+.tile { width: 20px; height: 20px; float: left; }
+.wall { background: #0000ff; }
+.pellet { background: #ffb8ae; border-radius: 50%; width: 6px; height: 6px; margin: 7px; }
+.pacman { background: yellow; border-radius: 50%; }
+.ghost { background: red; border-radius: 50%; }
+#ui { text-align: center; padding: 10px; }
+#touch-controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; }
+#touch-controls button { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 24px; width: 60px; height: 60px; margin: 5px; }
+@media (max-width: 600px) {
+  #game-container { transform: scale(0.75); transform-origin: top left; }
+  #touch-controls { display: block; }
+}
