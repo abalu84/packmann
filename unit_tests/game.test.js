@@ -10,4 +10,10 @@ describe('level file', () => {
   it('exists', () => {
     expect(fs.existsSync(levelPath)).toBe(true);
   });
+
+  it('has correct dimensions', () => {
+    const data = JSON.parse(fs.readFileSync(levelPath, 'utf-8'));
+    expect(data.layout.length).toBe(31);
+    expect(data.layout[0].length).toBe(28);
+  });
 });
